@@ -2,35 +2,61 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
 from datetime import date, datetime
+from usermanagement.models import User
 
 
 # Create your models here.
 
-class Users(AbstractUser):
-  ADMIN = 0
-  NORMAL_USER = 1
-  role_choices = (
-    (ADMIN, 'ADMIN'),
-    (NORMAL_USER, 'NORMAL_USER'),
-  )
 
-  user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-  first_name = models.CharField(max_length=200)
-  last_name = models.CharField(max_length=200)
-  email = models.EmailField(unique=True)
-  phone_number = models.CharField(max_length=12)
-  gender_choice = (
-    ('M', 'MALE'),
-    ('F', 'FEMALE'),
-  )
+class Campus(models.Model):
+    campus_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    campus_name = models.CharField(max_length=255)
+    campus_location = models.CharField(max_length=255)
 
-  gender = models.CharField(choices=gender_choice, max_length=2)
-  position = models.CharField(max_length=100)
-  date_of_birth = models.DateTimeField(null=True)
-  role = models.IntegerField(choices=role_choices, default=NORMAL_USER)
+    def __str__(self):
+        return self.campus_name
 
-  USERNAME_FIELD = "email"
-  REQUIRED_FIELDS = ['phone_number', 'username']
 
-  def __str__(self):
-    return self.email
+class Election(models.Model):
+    election_id = models.AutoField(primary_key=True)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    election_date = models.DateField()
+    election_time = models.TimeField()
+    active_election = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Election {self.election_id} at {self.campus}"
+
+
+class Candidate(models.Model):
+    candidate_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    candidate_position = models.CharField(max_length=255)
+    candidate_doc = models.FileField(upload_to='candidate_docs/')
+    candidate_description = models.TextField()
+
+    def __str__(self):
+        return f"Candidate {self.user.full_name} for {self.candidate_position}"
+
+
+class Vote(models.Model):
+    votes_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    no_votes = models.IntegerField()
+    votes_ranking = models.IntegerField()
+
+    def __str__(self):
+        return f"Vote by {self.user.full_name} for {self.candidate}"
+
+
+class Message(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message_description = models.TextField()
+
+    def __str__(self):
+        return f"Message {self.message_id} by {self.user.full_name}"
