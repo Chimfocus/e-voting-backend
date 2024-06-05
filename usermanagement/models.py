@@ -24,14 +24,15 @@ class User(AbstractUser):
     registration_no = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
-    role = models.PositiveIntegerField(choices=SYSTEM_ROLES, default=normal_user)
+    username = models.CharField(max_length=255)
+    role = models.PositiveIntegerField(choices=SYSTEM_ROLES, default=NORMAL_USER)
     course = models.CharField(max_length=100)
     class_name = models.CharField(max_length=100)
     picture = models.ImageField(upload_to='pictures/', null=True, blank=True)
     fingerprint_images = models.TextField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name']
+    REQUIRED_FIELDS = ['full_name', "username"]
 
     def __str__(self):
         return self.username

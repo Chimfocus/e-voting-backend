@@ -58,6 +58,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'votingsystem.urls'
+AUTH_USER_MODEL = 'usermanagement.User'
 
 TEMPLATES = [
     {
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'votingsystem.wsgi.application'
 DATABASES = {
     'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'voting_system',
+            'NAME': 'voting',
             'USER': 'postgres',
             'PASSWORD': 'postgres',
             'HOST': '127.0.0.1',
@@ -108,7 +109,7 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
 }
 
-AUTH_USER_MODEL = "voters.users"
+
 
 
 
