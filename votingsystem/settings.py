@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'usermanagement',
     'rest_framework',
     'rest_framework_simplejwt',
+    "corsheaders",
     
 
 
@@ -50,7 +51,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -59,6 +61,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'votingsystem.urls'
 AUTH_USER_MODEL = 'usermanagement.User'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 TEMPLATES = [
     {
@@ -85,7 +90,7 @@ WSGI_APPLICATION = 'votingsystem.wsgi.application'
 DATABASES = {
     'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'voting',
+            'NAME': 'voting_sys',
             'USER': 'postgres',
             'PASSWORD': 'postgres',
             'HOST': '127.0.0.1',
@@ -106,7 +111,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'user_id',
+    'USER_ID_FIELD': 'pk',
 }
 
 

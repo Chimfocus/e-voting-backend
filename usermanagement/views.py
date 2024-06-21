@@ -5,9 +5,9 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer, ChangePasswordSerializer
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from .token import get_user_token
-from .models import User
+from .models import *
 from rest_framework.generics import UpdateAPIView
-
+import random
 
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
@@ -48,18 +48,24 @@ class LoginView(APIView):
 
     @staticmethod
     def post(request):
-        username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
-        print('Data: ', username, password)
-        user = authenticate(username=username, password=password)
+        print('Data: ', email, password)
+        user = authenticate(email=email, password=password)
         if user is not None:
+            otp = random.random() * 10000
+
             login(request, user)
-            user_id = User.objects.get(username=username)
+            user_id = User.objects.get(email=email)
+            new_otp = UserOtps(user=user_id, otp=otp)
+            ##Send Otp to the user email
+            new_otp.save()
             user_info = UserSerializer(instance=user_id, many=False).data
             response = {
                 # 'token': get_user_token(user_id),
                 'user': user_info,
-                'success': True
+                'success': True,
+                "otp": int(otp)
             }
 
             return Response(response)
@@ -69,10 +75,53 @@ class LoginView(APIView):
             }
 
             return Response(response)
-#
+
+
+class VerifyOtps(APIView):
+    @staticmethod
+    def post(request):
+        otpstr = request.data.get("otp")
+        user_id_req = request.data.get("user_id")
+        print(request.data)
+        otp = otpstr
+        try:
+            user_in_otp = UserOtps.objects.get(user=user_id_req)
+            print(user_in_otp,"--------------")
+            if otp == user_in_otp.otp:
+                user_id = User.objects.get(id=user_id_req)
+                user_info = UserSerializer(instance=user_id, many=False).data
+                print("==================================================")
+                print(user_info)
+                response = {
+                    'token': get_user_token(user_id),
+                    'user': user_info,
+                    'success': True,
+                }
+                return Response(response)
+            else:
+                response = {
+                    'message': "Invalid Otp",
+                    'success': False,
+                }
+                return Response(response)
+        except UserOtps.DoesNotExist:
+            response = {
+                'message': "Invalid User",
+                'success': False,
+            }
+            return Response(response)
+        finally:
+            # Ensure the OTP record is deleted if it exists
+            try:
+                user_in_otp = UserOtps.objects.get(user=user_id_req)
+                user_in_otp.delete()
+            except UserOtps.DoesNotExist:
+                pass
+
+
 # {
-#     "email":"widambe@gmail.com",
-#     "password":"2+++++++++++++++++++++++++++++++5"
+#     "email":"neemajames11@yahoo.com",
+#     "password":"chimpaye"
 # }
 
 

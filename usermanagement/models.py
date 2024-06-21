@@ -3,6 +3,15 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 
 
+class Campus(models.Model):
+    id = models.AutoField(primary_key=True)
+    campus_name = models.CharField(max_length=255)
+    campus_location = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.campus_name
+
+
 class User(AbstractUser):
     # Define choices for system roles
     ADMIN = 0
@@ -30,7 +39,7 @@ class User(AbstractUser):
     class_name = models.CharField(max_length=100)
     picture = models.ImageField(upload_to='pictures/', null=True, blank=True)
     fingerprint_images = models.TextField(null=True, blank=True)
-
+    campus = models.OneToOneField(Campus,null=True,blank=True, on_delete=models.CASCADE)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', "username"]
 
