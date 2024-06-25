@@ -39,7 +39,7 @@ class User(AbstractUser):
     class_name = models.CharField(max_length=100)
     picture = models.ImageField(upload_to='pictures/', null=True, blank=True)
     fingerprint_images = models.TextField(null=True, blank=True)
-    campus = models.OneToOneField(Campus,null=True,blank=True, on_delete=models.CASCADE)
+    campus = models.ForeignKey(Campus, null=True, blank=True, on_delete=models.CASCADE)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', "username"]
 

@@ -27,7 +27,7 @@ class Candidate(models.Model):
     candidate_description = models.TextField()
 
     def __str__(self):
-        return f"Candidate {self.user.full_name} for {self.candidate_position}"
+        return f"Candidate {self.user.full_name}"
 
 
 class Vote(models.Model):

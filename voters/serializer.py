@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Election, Campus,Candidate, Vote, Message
 
 
-class ElectionGetSerializer(serializers. ModelSerializer):
+class ElectionGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
         fields = "__all__"
@@ -41,7 +41,7 @@ class VotePostSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'campus', 'candidate', 'election', 'no_votes', 'votes_ranking']
 
 
-class MessageGetSerializer(serializers. ModelSerializer):
+class MessageGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = "__all__"
@@ -54,7 +54,7 @@ class MessagePostSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'message_description']
 
 
-class CandidateGetSerializer(serializers. ModelSerializer):
+class CandidateGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
         fields = "__all__"

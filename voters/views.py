@@ -61,7 +61,7 @@ class CandidateView(APIView):
         elif querytype == "single_election":
             electionId = request.GET.get("electionId")
             queryset = Candidate.objects.filter(election=electionId)
-            serialized = CandidateGetSerializer(instance=queryset, many=False)
+            serialized = CandidateGetSerializer(instance=queryset, many=True)
             return Response(serialized.data)
         else:
             return Response({"message": "Specify the querying type"})

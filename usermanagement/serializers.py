@@ -19,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'campus'
         ]
+        depth = 2
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):

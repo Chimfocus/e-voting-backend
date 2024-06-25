@@ -8,6 +8,11 @@ from .token import get_user_token
 from .models import *
 from rest_framework.generics import UpdateAPIView
 import random
+import smtplib
+import tempfile
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
@@ -42,7 +47,6 @@ class RegisterUser(APIView):
 # "role":4,
 # }
 
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -50,32 +54,122 @@ class LoginView(APIView):
     def post(request):
         email = request.data.get('email')
         password = request.data.get('password')
-        print('Data: ', email, password)
+        print('Data:', email, password)
         user = authenticate(email=email, password=password)
+
         if user is not None:
-            otp = random.random() * 10000
+            otp = random.randint(1000, 9999)
 
-            login(request, user)
-            user_id = User.objects.get(email=email)
-            new_otp = UserOtps(user=user_id, otp=otp)
-            ##Send Otp to the user email
-            new_otp.save()
-            user_info = UserSerializer(instance=user_id, many=False).data
-            response = {
-                # 'token': get_user_token(user_id),
-                'user': user_info,
-                'success': True,
-                "otp": int(otp)
-            }
+            if LoginView.send_otp_email(email, otp):
+                login(request, user)
+                user_id = User.objects.get(email=email)
+                new_otp = UserOtps(user=user_id, otp=otp)
+                new_otp.save()
+                user_info = UserSerializer(instance=user_id, many=False).data
+                response = {
+                    'user': user_info,
+                    'success': True,
+                    'otp': otp
+                }
+                return Response(response)
+            else:
+                return Response({'message': 'Email sending failed'}, status=500)
 
-            return Response(response)
-        else:
-            response = {
-                'msg': 'Invalid username or password',
-            }
+        return Response({'msg': 'Invalid username or password'}, status=401)
 
-            return Response(response)
+    @staticmethod
+    def send_otp_email(email, otp):
+        try:
+            smtp_server = "smtp.gmail.com"
+            smtp_port = 587
+            smtp_username = "neychimfocus@gmail.com"
+            smtp_password = "qzltsoowsqqmxvwt"
+            smtp_sender = "neychimfocus@gmail.com"
+            smtp_recipient = email
 
+            message = MIMEMultipart()
+            message['From'] = smtp_sender
+            message['To'] = smtp_recipient
+            message['Subject'] = 'DIT E-VOTING SYSTEM.'
+
+            text = (f"DIT E-VOTING SYSTEM\n\n\n"
+                    f"LOGIN AUTHENTICATION ONE TIME PASSWORD\n"
+                    f"Your OTP: {otp}\n"
+                    f"Enter this OTP for Authorization.")
+            message.attach(MIMEText(text))
+
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.sendmail(smtp_sender, smtp_recipient, message.as_string())
+
+            return True
+
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            return False
+
+
+# class LoginView(APIView):
+#     permission_classes = [AllowAny]
+#
+#     @staticmethod
+#     def post(request):
+#         email = request.data.get('email')
+#         password = request.data.get('password')
+#         print('Data: ', email, password)
+#         user = authenticate(email=email, password=password)
+#         if user is not None:
+#             otp = random.random() * 10000
+#             try:
+#                 smtp_server = "smtp.gmail.com"
+#                 smtp_port = 587
+#                 smtp_username = "neychimfocus@gmail.com"
+#                 smtp_password = "qzltsoowsqqmxvwt "
+#                 smtp_sender = "neychimfocus@gmail.com"
+#                 smtp_recipient = email
+#
+#                 # Create a message object
+#                 message = MIMEMultipart()
+#                 message['From'] = smtp_sender
+#                 message['To'] = smtp_recipient
+#                 message['Subject'] = 'APPLICATION EMAIL.'
+#
+#                 # Add a text message to the email
+#                 text = "DIT E-VOTING SYSTEM" + '\n \n \n' + "LOGIN AUTHENTICATION ONE TIME PASSWORD" + "\n" + "Your Otp: "+ str(otp)  + "\n" + "Enter this otp for Authorization: "
+#                 message.attach(MIMEText(text))
+#
+#                 # Connect to the SMTP server and send the email
+#                 with smtplib.SMTP(smtp_server, smtp_port) as server:
+#                     server.starttls()
+#                     server.login(smtp_username, smtp_password)
+#                     server.sendmail(smtp_sender, smtp_recipient, message.as_string())
+#
+#             except Exception as e:
+#                 print(e)
+#                 return Response({'message': f"Email sending failed: {str(e)}"})
+#
+#             login(request, user)
+#             user_id = User.objects.get(email=email)
+#             new_otp = UserOtps(user=user_id, otp=otp)
+#             ##Send Otp to the user email
+#             new_otp.save()
+#             user_info = UserSerializer(instance=user_id, many=False).data
+#             response = {
+#                 # 'token': get_user_token(user_id),
+#                 'user': user_info,
+#                 'success': True,
+#                 "otp": int(otp)
+#             }
+#
+#             return Response(response)
+#         else:
+#             response = {
+#                 'msg': 'Invalid username or password',
+#             }
+#
+#             return Response(response)
+#
 
 class VerifyOtps(APIView):
     @staticmethod
