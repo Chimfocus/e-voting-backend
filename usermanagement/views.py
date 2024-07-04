@@ -98,10 +98,14 @@ class LoginView(APIView):
                     f"Enter this OTP for Authorization.")
             message.attach(MIMEText(text))
 
+            print("Connecting to SMTP server...")
             with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls()
+                print("Starting TLS...")
                 server.login(smtp_username, smtp_password)
+                print("Logged in to SMTP server...")
                 server.sendmail(smtp_sender, smtp_recipient, message.as_string())
+                print("Email sent to", smtp_recipient)
 
             return True
 

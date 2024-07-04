@@ -35,7 +35,7 @@ class CampusView(APIView):
 
 
 class CandidateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @staticmethod
     def post(request):
@@ -68,7 +68,7 @@ class CandidateView(APIView):
 
 
 class VoteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @staticmethod
     def post(request):
@@ -91,6 +91,34 @@ class VoteView(APIView):
             queryset = Vote.objects.get(id=voteId)
             serialized = VoteGetSerializer(instance=queryset, many=False)
             return Response(serialized.data)
+        elif querytype == "ifvoted":
+            electionId = request.GET.get("electionId")
+            userId = request.GET.get('userId')
+            campusId = request.GET.get('campusId')
+            queryset = Vote.objects.filter(user=userId, election=electionId, campus=campusId )
+            serialized = VoteGetSerializer(instance=queryset, many=True)
+            return Response(serialized.data)
+        elif querytype == "results":
+            electionId = request.GET.get("electionId")
+            campusId = request.GET.get("campusId")
+            result = []
+
+            # Get all candidates in the specified election and campus
+            candidates_in_election = Candidate.objects.filter(campus=campusId, election=electionId)
+
+            # For each candidate, count the votes they received
+            for cand in candidates_in_election:
+                vote_count = Vote.objects.filter(election=electionId, campus=campusId, candidate=cand).count()
+                candidate_name = cand.user.full_name
+
+                # Append the result to the list
+                result.append({
+                    'candidate_name': candidate_name,
+                    'no_votes': vote_count
+                })
+
+            return Response(result)
+
         else:
             return Response({"message": "Specify the querying type"})
 
@@ -147,6 +175,8 @@ class ElectionView(APIView):
             electionId = request.GET.get("electionId")
             queryset = Election.objects.get(id=electionId)
             serialized = ElectionGetSerializer(instance=queryset, many=False)
-            return Response(serialized.data)
+            return Response(serialized.data)\
+
         else:
             return Response({"message": "Specify the querying type"})
+
