@@ -7,4 +7,7 @@ urlpatterns = [
     path('campus/', CampusView.as_view(), name='campus'),
     path('vote', VoteView.as_view(), name='vote'),
     path('message/', MessageView.as_view(), name='message'),
+    path('vote_by_fingerprint/', VoteByFingerPrint.as_view(), name='fingerprint'),
 ]
+
+

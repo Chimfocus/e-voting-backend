@@ -9,6 +9,7 @@ class Election(models.Model):
     id = models.AutoField(primary_key=True)
     campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
     name = models.CharField(max_length=300, default="Year Election")
+    created_at = models.DateTimeField(auto_now_add=True)
     election_date = models.DateField()
     election_time = models.TimeField()
     active_election = models.BooleanField(default=False)
@@ -23,6 +24,7 @@ class Candidate(models.Model):
     campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
     candidate_position = models.CharField(max_length=255)
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
     candidate_doc = models.FileField(upload_to='uploads/')
     candidate_description = models.TextField()
 
@@ -36,6 +38,7 @@ class Vote(models.Model):
     campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
     no_votes = models.IntegerField()
     votes_ranking = models.IntegerField()
 
@@ -46,6 +49,7 @@ class Vote(models.Model):
 class Message(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
     message_description = models.TextField()
 
     def __str__(self):

@@ -34,6 +34,21 @@ class CampusView(APIView):
             return Response({"message": "Specify the querying type"})
 
 
+class VoteByFingerPrint(APIView):
+    permission_classes = [AllowAny]
+
+    @staticmethod
+    def post(request):
+        data = request.data
+        users = User.objects.all()
+        for user in users:
+            if user.fingerprint_images == request.GET.get('fingerprint'):
+                vote = Vote()
+                return Response({"message": "Voted successfully", "success": True})
+            else:
+                return Response({"message": "Voting failed ", "success": False})
+
+
 class CandidateView(APIView):
     permission_classes = [AllowAny]
 

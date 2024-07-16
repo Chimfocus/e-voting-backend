@@ -38,6 +38,7 @@ class User(AbstractUser):
     course = models.CharField(max_length=100)
     class_name = models.CharField(max_length=100)
     picture = models.ImageField(upload_to='pictures/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     fingerprint_images = models.TextField(null=True, blank=True)
     campus = models.ForeignKey(Campus, null=True, blank=True, on_delete=models.CASCADE)
     USERNAME_FIELD = 'email'
@@ -53,7 +54,15 @@ class User(AbstractUser):
 class UserOtps(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
     otp = models.IntegerField()
+
+
+class RegisteredStudents(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    student_registration_no = models.CharField(max_length=255)
+
 
 
     

@@ -94,8 +94,9 @@ class LoginView(APIView):
 
             text = (f"DIT E-VOTING SYSTEM\n\n\n"
                     f"LOGIN AUTHENTICATION ONE TIME PASSWORD\n"
-                    f"Your OTP: {otp}\n"
-                    f"Enter this OTP for Authorization.")
+                    f"Your OTP: {otp}\n for {email}"
+                    f"Enter this OTP for Authorization."
+                    f"This otp will expire in 10 mins")
             message.attach(MIMEText(text))
 
             print("Connecting to SMTP server...")
