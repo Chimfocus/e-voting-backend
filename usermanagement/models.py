@@ -58,6 +58,34 @@ class UserOtps(models.Model):
     otp = models.IntegerField()
 
 
+class UserTemporary(models.Model):
+    # Define choices for system roles
+    ADMIN = 0
+    NORMAL_USER = 1
+
+    # Choices for gender
+    MALE = 'M'
+    FEMALE = 'F'
+    GENDER_CHOICES = (
+        (MALE, 'Male'),
+        (FEMALE, 'Female'),
+    )
+    SYSTEM_ROLES = (
+        (ADMIN, 'ADMIN'),
+        (NORMAL_USER, 'NORMAL_USER')
+    )
+    full_name = models.CharField(max_length=255)
+    registration_no = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
+    role = models.PositiveIntegerField(choices=SYSTEM_ROLES, default=NORMAL_USER)
+    course = models.CharField(max_length=100)
+    class_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    campus = models.CharField(max_length=100)
+
+
 class RegisteredStudents(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

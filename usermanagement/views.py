@@ -13,6 +13,8 @@ import tempfile
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
@@ -46,6 +48,83 @@ class RegisterUser(APIView):
 # "phone_number":"078676726",
 # "role":4,
 # }
+
+
+class CreateUserTemporary(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+
+            full_name = data.get('full_name')
+            registration_no = data.get('registration_no')
+            email = data.get('email')
+            password = data.get('password')
+            username = data.get('username')
+            role = data.get('role', UserTemporary.NORMAL_USER)
+            course = data.get('course')
+            class_name = data.get('class_name')
+            campus_id = data.get('campus')
+
+            user = UserTemporary.objects.create(
+                full_name=full_name,
+                registration_no=registration_no,
+                email=email,
+                password=password,
+                username=username,
+                role=role,
+                course=course,
+                class_name=class_name,
+                campus=campus_id
+            )
+
+            return Response({'message': 'User created waiting for fingerprint for registration completion', 'user_id': user.id}, status=201)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+
+class RegisterUserWithFingerPrint(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+
+            user_dt = UserTemporary.objects.all()
+            print(user_dt)
+            user_temp = user_dt[0]
+            print(user_temp)
+
+            user_data = {
+                'full_name': user_temp.full_name,
+                'registration_no': user_temp.registration_no,
+                'email': user_temp.email,
+                'password': user_temp.password,
+                'username': user_temp.username,
+                'role': user_temp.role,
+                'course': user_temp.course,
+                'class_name': user_temp.class_name,
+                'fingerprint_images': data.get("fingerprint_data"),
+                'campus': user_temp.campus
+            }
+
+            # Serialize the data
+            serializer = UserSerializer(data=user_data)
+            if serializer.is_valid():
+                # Create the user
+                serializer.save()
+
+                # Delete the temporary user data
+                user_temp.delete()
+
+                return Response({'message': 'User created successfully', 'user_id': serializer.data['id']},
+                                status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except UserTemporary.DoesNotExist:
+            return Response({'error': 'user data not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -115,66 +194,6 @@ class LoginView(APIView):
             return False
 
 
-# class LoginView(APIView):
-#     permission_classes = [AllowAny]
-#
-#     @staticmethod
-#     def post(request):
-#         email = request.data.get('email')
-#         password = request.data.get('password')
-#         print('Data: ', email, password)
-#         user = authenticate(email=email, password=password)
-#         if user is not None:
-#             otp = random.random() * 10000
-#             try:
-#                 smtp_server = "smtp.gmail.com"
-#                 smtp_port = 587
-#                 smtp_username = "neychimfocus@gmail.com"
-#                 smtp_password = "qzltsoowsqqmxvwt "
-#                 smtp_sender = "neychimfocus@gmail.com"
-#                 smtp_recipient = email
-#
-#                 # Create a message object
-#                 message = MIMEMultipart()
-#                 message['From'] = smtp_sender
-#                 message['To'] = smtp_recipient
-#                 message['Subject'] = 'APPLICATION EMAIL.'
-#
-#                 # Add a text message to the email
-#                 text = "DIT E-VOTING SYSTEM" + '\n \n \n' + "LOGIN AUTHENTICATION ONE TIME PASSWORD" + "\n" + "Your Otp: "+ str(otp)  + "\n" + "Enter this otp for Authorization: "
-#                 message.attach(MIMEText(text))
-#
-#                 # Connect to the SMTP server and send the email
-#                 with smtplib.SMTP(smtp_server, smtp_port) as server:
-#                     server.starttls()
-#                     server.login(smtp_username, smtp_password)
-#                     server.sendmail(smtp_sender, smtp_recipient, message.as_string())
-#
-#             except Exception as e:
-#                 print(e)
-#                 return Response({'message': f"Email sending failed: {str(e)}"})
-#
-#             login(request, user)
-#             user_id = User.objects.get(email=email)
-#             new_otp = UserOtps(user=user_id, otp=otp)
-#             ##Send Otp to the user email
-#             new_otp.save()
-#             user_info = UserSerializer(instance=user_id, many=False).data
-#             response = {
-#                 # 'token': get_user_token(user_id),
-#                 'user': user_info,
-#                 'success': True,
-#                 "otp": int(otp)
-#             }
-#
-#             return Response(response)
-#         else:
-#             response = {
-#                 'msg': 'Invalid username or password',
-#             }
-#
-#             return Response(response)
-#
 
 class VerifyOtps(APIView):
     @staticmethod
